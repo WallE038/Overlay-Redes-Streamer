@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Overlay de redes — Fernando</title>
+<style>
+:root {
+  --panel: rgba(12, 10, 18, .96);
+  --purple: #9d4edd;
+  --purple-soft: #c77dff;
+  --white: #fff;
+  --bar-w: 575px;
+  --bar-h: 104px;
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+}
+.stage {
+  position: relative;
+  width: 760px;
+  height: 180px;
+  display: flex;
+  align-items: flex-end;
+  padding: 18px 0 18px 18px;
+}
+.overlay {
+  position: relative;
+  width: var(--bar-w);
+  height: var(--bar-h);
+  transform-origin: left center;
+}
+.bar-shell {
+  position: absolute;
+  inset: 0;
+  border-radius: 26px;
+  background:
+    linear-gradient(90deg, rgba(157,78,221,.18), rgba(157,78,221,.035) 42%, rgba(255,255,255,.02)),
+    var(--panel);
+  border: 2px solid rgba(157,78,221,.95);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.05) inset,
+    0 0 18px rgba(157,78,221,.28);
+  overflow: hidden;
+}
+.bar-shell::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--purple), var(--purple-soft), transparent 90%);
+}
+.content {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  align-items: center;
+  padding: 14px 26px 14px 17px;
+  gap: 17px;
+}
+.icon-wrap {
+  width: 72px;
+  height: 72px;
+  border-radius: 21px;
+  display: grid;
+  place-items: center;
+  background: rgba(157,78,221,.14);
+  border: 1px solid rgba(199,125,255,.58);
+  box-shadow: 0 0 14px rgba(157,78,221,.2);
+}
+.icon-wrap svg {
+  width: 42px;
+  height: 42px;
+  color: white;
+}
+.icon-wrap.discord svg {
+  width: 54px;
+  height: 54px;
+}
+.texts {
+  min-width: 0;
+  position: relative;
+  z-index: 3;
+}
+.label {
+  margin: 0 0 3px;
+  color: var(--purple-soft);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+}
+.username {
+  margin: 0;
+  color: var(--white);
+  font-size: 34px;
+  line-height: 1.08;
+  font-weight: 900;
+  white-space: nowrap;
+  text-shadow: 0 2px 10px rgba(0,0,0,.65);
+}
+.mascot {
+  position: absolute;
+  z-index: 4;
+  right: -48px;
+  bottom: 7px;
+  width: 88px;
+  height: 88px;
+  object-fit: contain;
+  filter:
+    drop-shadow(0 7px 8px rgba(0,0,0,.75))
+    drop-shadow(0 0 5px rgba(157,78,221,.38));
+  transform-origin: center bottom;
+}
+.mascot.gengar { width: 185px; height: 185px; right: -65px; bottom: -40px; }
+.mascot.pikachu { width: 120px; height: 120px; right: -55px; bottom: 2px; }
+.mascot.umbreon { width: 130px; height: 130px; right: -48px; bottom: 2px; }
+.mascot.charmander { width: 280px; height: 280px; right: -90px; bottom: -80px; }
+.mascot.riolu { width: 130px; height: 130px; right: -50px; bottom: -1px; }
+
+.accent-dot {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  right: 18px;
+  top: 16px;
+  background: var(--purple-soft);
+  box-shadow: 0 0 12px var(--purple-soft);
+  opacity: .8;
+}
+.enter { animation: barIn .72s cubic-bezier(.18,.89,.32,1.18) forwards; }
+.exit { animation: barOut .58s ease-in forwards; }
+.enter .content { animation: contentIn .45s .22s ease-out both; }
+.enter .mascot {
+  animation:
+    mascotIn .46s .42s cubic-bezier(.2,.9,.25,1.25) both,
+    mascotIdle 2.2s 1s ease-in-out infinite;
+}
+.exit .mascot { animation: mascotOut .28s ease-in forwards; }
+
+@keyframes barIn {
+  0% { transform: translateX(-120%) scaleX(.05); opacity: 0; }
+  55% { opacity: 1; }
+  100% { transform: translateX(0) scaleX(1); opacity: 1; }
+}
+@keyframes barOut {
+  0% { transform: translateX(0) scaleX(1); opacity: 1; }
+  100% { transform: translateX(-120%) scaleX(.05); opacity: 0; }
+}
+@keyframes contentIn {
+  from { opacity: 0; transform: translateX(-18px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes mascotIn {
+  from { opacity: 0; transform: translateY(18px) scale(.74); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes mascotOut {
+  to { opacity: 0; transform: translateY(14px) scale(.86); }
+}
+@keyframes mascotIdle {
+  0%,100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-3px) rotate(-1deg); }
+}
+</style>
+</head>
+<body>
+<main class="stage">
+  <section id="overlay" class="overlay" aria-live="polite">
+    <div class="bar-shell"></div>
+    <div class="accent-dot"></div>
+    <div class="content">
+      <div id="icon" class="icon-wrap"></div>
+      <div class="texts">
+        <p id="label" class="label">Instagram</p>
+        <p id="username" class="username">@fernando.mc03</p>
+      </div>
+    </div>
+    <img id="mascot" class="mascot gengar" alt="" src="img/gengar.png">
+  </section>
+</main>
+
+<script>
+const icons = {
+  instagram: `
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="5"></rect>
+      <circle cx="12" cy="12" r="4"></circle>
+      <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"></circle>
+    </svg>`,
+  discord: `
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path fill="currentColor" d="M19.55 5.34A17.2 17.2 0 0 0 15.3 4l-.52 1.08a15.8 15.8 0 0 0-5.56 0L8.7 4a17.4 17.4 0 0 0-4.27 1.35C1.73 9.34 1 13.2 1.36 17a17.2 17.2 0 0 0 5.22 2.64l1.28-1.76a11.2 11.2 0 0 1-2.01-.96l.49-.37c3.88 1.79 8.08 1.79 11.91 0l.5.37c-.65.38-1.33.7-2.02.96L18 19.64A17.1 17.1 0 0 0 23.22 17c.43-4.4-.73-8.23-3.67-11.66ZM8.58 14.68c-1.16 0-2.12-1.08-2.12-2.4s.93-2.4 2.12-2.4 2.14 1.08 2.12 2.4c0 1.32-.93 2.4-2.12 2.4Zm6.84 0c-1.16 0-2.12-1.08-2.12-2.4s.93-2.4 2.12-2.4 2.14 1.08 2.12 2.4c0 1.32-.93 2.4-2.12 2.4Z"/>
+    </svg>`,
+  twitch: `
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 4h15v10l-4 4h-4l-2.5 2.5V18H5z"></path>
+      <path d="M9 8v5M14 8v5"></path>
+    </svg>`,
+  valorant: `
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+      <path d="M3.2 4.6 10.4 14l2.1 2.7H8.4L3.2 10.1V4.6Zm17.6 0L13.6 14l-2.1 2.7h4.1l5.2-6.6V4.6Z"></path>
+    </svg>`,
+  fortnite: `
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+      <path d="M6 3h12v5h-7v3h5v4h-5v6H6z"></path>
+    </svg>`
+};
+
+const socials = [
+  { key:"instagram", label:"Instagram", username:"@fernando.mc03", image:"img/gengar.png", mascotClass:"gengar" },
+  { key:"discord", label:"Discord", username:"fernando.m03", image:"img/pikachu.png", mascotClass:"pikachu" },
+  { key:"twitch", label:"Twitch", username:"fer_moralesuwu", image:"img/umbreon.png", mascotClass:"umbreon" },
+  { key:"valorant", label:"Valorant", username:"SoyWall E#Astro", image:"img/charmander.png", mascotClass:"charmander" },
+  { key:"fortnite", label:"Fortnite", username:"SoyWallE_QSTO", image:"img/riolu.png", mascotClass:"riolu" }
+];
+
+const overlay = document.getElementById("overlay");
+const icon = document.getElementById("icon");
+const label = document.getElementById("label");
+const username = document.getElementById("username");
+const mascot = document.getElementById("mascot");
+
+let index = 0;
+const visibleMs = 5200;
+const transitionMs = 800;
+
+function render(item) {
+  icon.className = `icon-wrap ${item.key}`;
+  icon.innerHTML = icons[item.key];
+  label.textContent = item.label;
+  username.textContent = item.username;
+  mascot.src = item.image;
+  mascot.className = `mascot ${item.mascotClass}`;
+}
+
+function playCurrent() {
+  render(socials[index]);
+  overlay.classList.remove("exit");
+  void overlay.offsetWidth;
+  overlay.classList.add("enter");
+
+  setTimeout(() => {
+    overlay.classList.remove("enter");
+    overlay.classList.add("exit");
+    setTimeout(() => {
+      index = (index + 1) % socials.length;
+      playCurrent();
+    }, transitionMs);
+  }, visibleMs);
+}
+playCurrent();
+</script>
+</body>
+</html>
